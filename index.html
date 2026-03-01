@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Asesmen SDN 1 Gondang</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #0284c7;
+            --secondary-blue: #93c5fd;
+            --accent-green: #10b981;
+            --bg-gray: #f3f4f6;
+        }
+
+        body {
+            background-color: var(--bg-gray);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            max-height: 850px;
+            background-color: #e5e7eb;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+            position: relative;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 640px) {
+            .app-container {
+                height: 90vh;
+                border-radius: 24px;
+            }
+        }
+
+        .font-sahabat {
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.1em;
+            background: linear-gradient(to bottom, #1e293b, #334155);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(1px 1px 0px rgba(255,255,255,0.3));
+        }
+
+        .login-card {
+            background-color: var(--secondary-blue);
+            border-radius: 20px;
+            padding: 40px 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-masuk {
+            background-color: var(--accent-green);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-masuk:hover {
+            background-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-nav {
+            background-color: var(--primary-blue);
+            border-radius: 12px;
+            color: white;
+            padding: 12px 24px;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .option-item {
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .selected-option {
+            background-color: #dbeafe !important;
+            border-color: #3b82f6 !important;
+            transform: translateX(8px);
+        }
+
+        #loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(4px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            color: white;
+        }
+
+        .input-field {
+            background-color: var(--primary-blue);
+            color: white;
+            text-align: center;
+            font-weight: bold;
+            padding: 14px;
+            border-radius: 12px;
+            width: 100%;
+            border: 2px solid transparent;
+            outline: none;
+        }
+
+        .input-field::placeholder { color: rgba(255,255,255,0.7); }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container p-6" id="app">
+    <!-- Overlay Loading saat Kirim Data -->
+    <div id="loading-overlay">
+        <div class="animate-spin rounded-full h-14 w-14 border-4 border-blue-400 border-t-transparent mb-4"></div>
+        <p class="font-bold text-lg">Mengirim Jawaban...</p>
+    </div>
+
+    <!-- Screen 1: Login Siswa -->
+    <div id="login-screen" class="flex flex-col items-center">
+        <div class="mt-8 mb-6">
+            <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiUAgnz3M-C0b4aP4NCccOVpRTBjimetBgZhyphenhyphenkGcMIcG3YY7RhacnjOZFFonylLQGbQ0LQHR7n4cOk7XN8mDb9YmRrXgJi5q7yZCEEKpQ4CYuB9WaZLCNw35_qVPvcRTizOMvZXsYVqmAOSfxDv9bUmpB9z_-2G3ecR_C1CONgsQ5-5U5NA2B9rpU4zfJnZ/w200-h200/sdn%20gng%201.png" alt="Logo SDN 1 Gondang" class="w-28 h-28 object-contain">
+        </div>
+
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 leading-tight uppercase">Selamat Datang</h1>
+            <h2 class="text-5xl font-black mb-2 font-sahabat uppercase">Sahabat</h2>
+            <p class="text-[11px] text-gray-600 font-medium tracking-widest uppercase">
+                Sistem Asesmen Hasil Amanah Berprestasi Akurat & Terpercaya
+            </p>
+        </div>
+
+        <div class="w-full login-card">
+            <div class="space-y-4">
+                <input type="text" id="name" placeholder="NAMA LENGKAP" class="input-field uppercase">
+                <input type="number" id="absen" placeholder="NOMOR ABSEN" class="input-field">
+                <button onclick="startExam()" class="w-full py-4 mt-4 rounded-xl btn-masuk text-white font-bold text-lg shadow-lg uppercase">
+                    Mulai Ujian
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Screen 2: Area Ujian -->
+    <div id="exam-screen" class="hidden flex flex-col h-full">
+        <div class="w-full bg-gray-300 rounded-full h-2 mb-6">
+            <div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <div class="flex justify-between items-center mb-6">
+            <span class="bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase">
+                Soal <span id="current-number">1</span> / <span id="total-questions">0</span>
+            </span>
+            <span id="timer" class="text-gray-700 font-mono font-bold text-sm bg-white px-3 py-1 rounded-lg shadow-sm">00:00</span>
+        </div>
+        
+        <div class="flex-grow">
+            <div class="bg-white rounded-2xl p-6 shadow-sm mb-6 border-b-4 border-blue-200">
+                <p id="question-text" class="text-lg font-bold text-gray-800 leading-snug">Memuat soal...</p>
+            </div>
+            <div id="options-container" class="space-y-3"></div>
+        </div>
+
+        <div class="flex justify-between items-center mt-8 pb-6 gap-4">
+            <button onclick="prevQuestion()" id="prev-btn" class="btn-nav flex-1 opacity-50" disabled>Sebelumnya</button>
+            <button onclick="handleNext()" class="btn-nav flex-1" id="next-btn">Selanjutnya</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Konfirmasi Selesai -->
+<div id="confirm-modal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="text-xl font-bold mb-2">Selesai Ujian?</h3>
+        <p class="text-gray-600 mb-6">Kirim jawaban sekarang untuk melihat hasil.</p>
+        <div class="flex gap-3">
+            <button onclick="hideConfirm()" class="flex-1 py-3 border-2 border-gray-200 rounded-xl font-bold text-gray-500">Batal</button>
+            <button onclick="finishExam()" class="flex-1 py-3 bg-green-500 text-white rounded-xl font-bold shadow-lg">Kirim</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    /**
+     * URL Web App Google Apps Script Anda sudah terpasang.
+     */
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbz1sq6Ks2rC3lIdcA3i9TRLPebUdny0st73zmcZXI7HVVSZ63hxJWsz3_rVOH3L0gdO/exec'; 
+
+    // Daftar Soal Ujian
+const questionsB = [
+  // --- SURAH AL-FALAQ & SURAH AL-KAUSAR ---
+  { 
+    id: 1, 
+    text: "Surah Al-Falaq adalah surah yang ke-.... dalam Al-Qur'an.", 
+    options: [{id:'A', text:'112'}, {id:'B', text:'113'}, {id:'C', text:'114'}, {id:'D', text:'110'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 2, 
+    text: "Arti dari kata Al-Falaq adalah ....", 
+    options: [{id:'A', text:'Waktu Maghrib'}, {id:'B', text:'Matahari'}, {id:'C', text:'Waktu Subuh'}, {id:'D', text:'Malam Hari'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 3, 
+    text: "Kita diperintahkan membaca Surah Al-Falaq agar terhindar dari kejahatan ....", 
+    options: [{id:'A', text:'Malam apabila telah gelap'}, {id:'B', text:'Siang hari'}, {id:'C', text:'Teman sekolah'}, {id:'D', text:'Hewan peliharaan'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 4, 
+    text: "Surah Al-Falaq termasuk golongan surah Makkiyah karena diturunkan di ....", 
+    options: [{id:'A', text:'Madinah'}, {id:'B', text:'Mesir'}, {id:'C', text:'Makkah'}, {id:'D', text:'Palestina'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 5, 
+    text: "Lanjutan ayat: 'Min syarri maa ....'", 
+    options: [{id:'A', text:'ghasyiq'}, {id:'B', text:'waqab'}, {id:'C', text:'khalaq'}, {id:'D', text:'hasad'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 6, 
+    text: "Surah Al-Kausar berjumlah .... ayat.", 
+    options: [{id:'A', text:'2'}, {id:'B', text:'3'}, {id:'C', text:'4'}, {id:'D', text:'5'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 7, 
+    text: "Al-Kausar artinya nikmat yang ....", 
+    options: [{id:'A', text:'Sedikit'}, {id:'B', text:'Hilang'}, {id:'C', text:'Banyak'}, {id:'D', text:'Terputus'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 8, 
+    text: "Setelah melaksanakan shalat, dalam surah Al-Kausar kita diminta untuk ....", 
+    options: [{id:'A', text:'Bermain'}, {id:'B', text:'Berkurban'}, {id:'C', text:'Tidur'}, {id:'D', text:'Makan'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 9, 
+    text: "Surah Al-Kausar diturunkan sebagai penghibur hati Nabi ....", 
+    options: [{id:'A', text:'Adam as.'}, {id:'B', text:'Ibrahim as.'}, {id:'C', text:'Muhammad saw.'}, {id:'D', text:'Musa as.'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 10, 
+    text: "Lanjutan ayat: 'Fashalli lirabbika ....'", 
+    options: [{id:'A', text:'wanhar'}, {id:'B', text:'abtar'}, {id:'C', text:'kautsar'}, {id:'D', text:'falaq'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 11, 
+    text: "Nikmat Allah sangat banyak, maka kita harus selalu ....", 
+    options: [{id:'A', text:'Marah'}, {id:'B', text:'Pura-pura lupa'}, {id:'C', text:'Bersyukur'}, {id:'D', text:'Mengeluh'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 12, 
+    text: "Surah Al-Falaq mengajarkan kita untuk berlindung hanya kepada ....", 
+    options: [{id:'A', text:'Dukun'}, {id:'B', text:'Pohon besar'}, {id:'C', text:'Allah swt.'}, {id:'D', text:'Manusia kuat'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 13, 
+    text: "Ayat terakhir surah Al-Kausar menyebutkan bahwa orang yang membenci Nabi akan ....", 
+    options: [{id:'A', text:'Beruntung'}, {id:'B', text:'Mulia'}, {id:'C', text:'Terputus (dari rahmat Allah)'}, {id:'D', text:'Bahagia'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 14, 
+    text: "Membaca Al-Qur'an akan mendapatkan ....", 
+    options: [{id:'A', text:'Pahala'}, {id:'B', text:'Uang'}, {id:'C', text:'Hadiah mainan'}, {id:'D', text:'Pujian teman'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 15, 
+    text: "Al-Falaq dan An-Nas disebut juga Al-Mu'awwidzatain yang berarti dua surah ....", 
+    options: [{id:'A', text:'Pembuka'}, {id:'B', text:'Perlindungan'}, {id:'C', text:'Pendek'}, {id:'D', text:'Cerita'}], 
+    correct: 'B' 
+  },
+
+  // --- BERIMAN KEPADA MALAIKAT ---
+  { 
+    id: 16, 
+    text: "Malaikat diciptakan Allah dari Nur. Nur artinya ....", 
+    options: [{id:'A', text:'Tanah'}, {id:'B', text:'Api'}, {id:'C', text:'Cahaya'}, {id:'D', text:'Angin'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 17, 
+    text: "Percaya kepada Malaikat adalah Rukun Iman yang ke-....", 
+    options: [{id:'A', text:'1'}, {id:'B', text:'2'}, {id:'C', text:'3'}, {id:'D', text:'4'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 18, 
+    text: "Malaikat selalu patuh dan tidak pernah .... kepada Allah.", 
+    options: [{id:'A', text:'Beribadah'}, {id:'B', text:'Berdosa'}, {id:'C', text:'Tunduk'}, {id:'D', text:'Ingat'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 19, 
+    text: "Sifat malaikat yang membedakannya dengan manusia adalah ....", 
+    options: [{id:'A', text:'Malaikat butuh makan'}, {id:'B', text:'Malaikat tidak punya nafsu'}, {id:'C', text:'Malaikat bisa mengantuk'}, {id:'D', text:'Malaikat punya keluarga'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 20, 
+    text: "Malaikat termasuk makhluk gaib, artinya malaikat ....", 
+    options: [{id:'A', text:'Bisa dilihat siapa saja'}, {id:'B', text:'Tidak bisa dilihat oleh mata manusia'}, {id:'C', text:'Hanya ada di dalam mimpi'}, {id:'D', text:'Makhluk yang jahat'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 21, 
+    text: "Malaikat yang wajib kita ketahui jumlahnya ada ....", 
+    options: [{id:'A', text:'5'}, {id:'B', text:'10'}, {id:'C', text:'25'}, {id:'D', text:'99'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 22, 
+    text: "Malaikat tidak makan dan tidak minum karena malaikat tidak memiliki ....", 
+    options: [{id:'A', text:'Mulut'}, {id:'B', text:'Rasa lapar'}, {id:'C', text:'Hawa nafsu'}, {id:'D', text:'Tugas'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 23, 
+    text: "Orang yang tidak percaya kepada malaikat disebut ....", 
+    options: [{id:'A', text:'Beriman'}, {id:'B', text:'Malaikat'}, {id:'C', text:'Kafir/Tidak beriman'}, {id:'D', text:'Soleh'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 24, 
+    text: "Malaikat selalu bertasbih kepada Allah siang dan malam tanpa merasa ....", 
+    options: [{id:'A', text:'Senang'}, {id:'B', text:'Bosan/Lelah'}, {id:'C', text:'Ikhlas'}, {id:'D', text:'Sadar'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 25, 
+    text: "Malaikat dapat berubah wujud atas izin ....", 
+    options: [{id:'A', text:'Nabi'}, {id:'B', text:'Manusia'}, {id:'C', text:'Allah swt.'}, {id:'D', text:'Dirinya sendiri'}], 
+    correct: 'C' 
+  },
+
+  // --- NAMA MALAIKAT & TUGASNYA ---
+  { 
+    id: 26, 
+    text: "Malaikat Jibril bertugas untuk menyampaikan ....", 
+    options: [{id:'A', text:'Rezeki'}, {id:'B', text:'Wahyu'}, {id:'C', text:'Sangkakala'}, {id:'D', text:'Pertanyaan kubur'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 27, 
+    text: "Membagi rezeki dan mengatur hujan adalah tugas Malaikat ....", 
+    options: [{id:'A', text:'Mikail'}, {id:'B', text:'Israil'}, {id:'C', text:'Malik'}, {id:'D', text:'Ridwan'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 28, 
+    text: "Malaikat yang bertugas mencabut nyawa adalah ....", 
+    options: [{id:'A', text:'Izrail'}, {id:'B', text:'Israfil'}, {id:'C', text:'Raqib'}, {id:'D', text:'Atid'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 29, 
+    text: "Malaikat Israfil memiliki tugas untuk ....", 
+    options: [{id:'A', text:'Mencatat amal buruk'}, {id:'B', text:'Menjaga neraka'}, {id:'C', text:'Meniup sangkakala'}, {id:'D', text:'Membagi rezeki'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 30, 
+    text: "Malaikat yang bertugas menanya manusia di dalam kubur adalah ....", 
+    options: [{id:'A', text:'Raqib dan Atid'}, {id:'B', text:'Munkar dan Nakir'}, {id:'C', text:'Malik dan Ridwan'}, {id:'D', text:'Jibril dan Mikail'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 31, 
+    text: "Malaikat Raqib bertugas mencatat amal ....", 
+    options: [{id:'A', text:'Buruk'}, {id:'B', text:'Baik'}, {id:'C', text:'Makan'}, {id:'D', text:'Tidur'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 32, 
+    text: "Setiap perbuatan jahat akan dicatat oleh Malaikat ....", 
+    options: [{id:'A', text:'Atid'}, {id:'B', text:'Raqib'}, {id:'C', text:'Ridwan'}, {id:'D', text:'Mikail'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 33, 
+    text: "Penjaga pintu surga yang sangat ramah bernama Malaikat ....", 
+    options: [{id:'A', text:'Malik'}, {id:'B', text:'Ridwan'}, {id:'C', text:'Jibril'}, {id:'D', text:'Mikail'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 34, 
+    text: "Malaikat Malik bertugas menjaga pintu ....", 
+    options: [{id:'A', text:'Masjid'}, {id:'B', text:'Surga'}, {id:'C', text:'Neraka'}, {id:'D', text:'Sekolah'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 35, 
+    text: "Nama lain dari Malaikat Izrail adalah ....", 
+    options: [{id:'A', text:'Ruhul Qudus'}, {id:'B', text:'Malakul Maut'}, {id:'C', text:'Khalilullah'}, {id:'D', text:'Ulul Azmi'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 36, 
+    text: "Siapa malaikat yang mencatat saat kita membantu orang tua?", 
+    options: [{id:'A', text:'Atid'}, {id:'B', text:'Raqib'}, {id:'C', text:'Malik'}, {id:'D', text:'Mikail'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 37, 
+    text: "Malaikat yang menyampaikan Al-Qur'an kepada Nabi Muhammad adalah ....", 
+    options: [{id:'A', text:'Jibril'}, {id:'B', text:'Mikail'}, {id:'C', text:'Israfil'}, {id:'D', text:'Izrail'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 38, 
+    text: "Tugas malaikat tidak pernah tertukar karena mereka sangat ....", 
+    options: [{id:'A', text:'Malas'}, {id:'B', text:'Lalai'}, {id:'C', text:'Disiplin dan Taat'}, {id:'D', text:'Sibuk'}], 
+    correct: 'C' 
+  },
+  { 
+    id: 39, 
+    text: "Ketika hari kiamat tiba, Malaikat .... akan meniup sangkakala.", 
+    options: [{id:'A', text:'Mikail'}, {id:'B', text:'Israfil'}, {id:'C', text:'Israil'}, {id:'D', text:'Malik'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 40, 
+    text: "Malaikat Ridwan akan menyambut orang yang .... di surga.", 
+    options: [{id:'A', text:'Jahat'}, {id:'B', text:'Soleh'}, {id:'C', text:'Bohong'}, {id:'D', text:'Sombong'}], 
+    correct: 'B' 
+  },
+
+  // --- CIRI ANAK BERIMAN KEPADA MALAIKAT ---
+  { 
+    id: 41, 
+    text: "Anak yang percaya ada Malaikat Raqib dan Atid akan selalu ....", 
+    options: [{id:'A', text:'Berhati-hati dalam bertindak'}, {id:'B', text:'Berani berbuat dosa'}, {id:'C', text:'Suka berbohong'}, {id:'D', text:'Malas belajar'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 42, 
+    text: "Sikap jujur adalah ciri anak yang yakin bahwa malaikat ....", 
+    options: [{id:'A', text:'Sedang tidur'}, {id:'B', text:'Selalu mengawasi'}, {id:'C', text:'Tidak peduli'}, {id:'D', text:'Hanya di masjid'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 43, 
+    text: "Mengapa kita harus tetap berbuat baik meski tidak dilihat orang lain?", 
+    options: [{id:'A', text:'Karena ada malaikat yang mencatat'}, {id:'B', text:'Agar dapat hadiah'}, {id:'C', text:'Agar dipuji guru'}, {id:'D', text:'Karena takut polisi'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 44, 
+    text: "Anak yang beriman kepada malaikat akan menjauhi sifat ....", 
+    options: [{id:'A', text:'Sombong'}, {id:'B', text:'Sabar'}, {id:'C', text:'Pemaaf'}, {id:'D', text:'Ramah'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 45, 
+    text: "Selalu mendoakan kebaikan bagi orang lain adalah tanda anak yang ....", 
+    options: [{id:'A', text:'Pintar'}, {id:'B', text:'Beriman'}, {id:'C', text:'Nakal'}, {id:'D', text:'Lucu'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 46, 
+    text: "Jika kita tidak sengaja berbuat salah, sebaiknya segera ....", 
+    options: [{id:'A', text:'Bersembunyi'}, {id:'B', text:'Minta maaf dan bertaubat'}, {id:'C', text:'Menyalahkan teman'}, {id:'D', text:'Diam saja'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 47, 
+    text: "Keyakinan adanya Malaikat Mikail membuat kita menjadi rajin ....", 
+    options: [{id:'A', text:'Minta-minta'}, {id:'B', text:'Ikhtiar/Berusaha dan Berdoa'}, {id:'C', text:'Tidur'}, {id:'D', text:'Marah'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 48, 
+    text: "Mendengarkan nasihat guru dengan baik adalah contoh sikap ....", 
+    options: [{id:'A', text:'Anak yang soleh'}, {id:'B', text:'Anak yang sombong'}, {id:'C', text:'Anak yang malas'}, {id:'D', text:'Anak yang pelupa'}], 
+    correct: 'A' 
+  },
+  { 
+    id: 49, 
+    text: "Percaya adanya Malaikat Malik membuat kita takut berbuat ....", 
+    options: [{id:'A', text:'Baik'}, {id:'B', text:'Dosa/Maksiat'}, {id:'C', text:'Shalat'}, {id:'D', text:'Zakat'}], 
+    correct: 'B' 
+  },
+  { 
+    id: 50, 
+    text: "Malaikat senang berada di tempat yang ....", 
+    options: [{id:'A', text:'Kotor'}, {id:'B', text:'Bau'}, {id:'C', text:'Bersih dan penuh zikir'}, {id:'D', text:'Berisik'}], 
+    correct: 'C' 
+  }
+    ];
+
+    let currentQuestionIndex = 0;
+    let userAnswers = {};
+    let userData = { name: '', absen: '' };
+    let startTime;
+    let timerInterval;
+
+    function startExam() {
+        userData.name = document.getElementById('name').value.trim();
+        userData.absen = document.getElementById('absen').value.trim();
+
+        if (!userData.name || !userData.absen) {
+            alert("Harap masukkan Nama dan No Absen!");
+            return;
+        }
+
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('exam-screen').classList.remove('hidden');
+        document.getElementById('total-questions').innerText = questions.length;
+        
+        startTime = new Date();
+        timerInterval = setInterval(updateTimer, 1000);
+        renderQuestion();
+    }
+
+    function updateTimer() {
+        const diff = Math.floor((new Date() - startTime) / 1000);
+        const m = Math.floor(diff / 60).toString().padStart(2, '0');
+        const s = (diff % 60).toString().padStart(2, '0');
+        document.getElementById('timer').innerText = `${m}:${s}`;
+    }
+
+    function renderQuestion() {
+        const q = questions[currentQuestionIndex];
+        document.getElementById('current-number').innerText = currentQuestionIndex + 1;
+        document.getElementById('question-text').innerText = q.text;
+        document.getElementById('progress-bar').style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        q.options.forEach(opt => {
+            const isSelected = userAnswers[currentQuestionIndex] === opt.id;
+            const div = document.createElement('div');
+            div.className = `option-item p-4 rounded-xl font-semibold flex items-center shadow-sm ${isSelected ? 'selected-option' : ''}`;
+            div.innerHTML = `
+                <div class="w-8 h-8 rounded-full flex items-center justify-center mr-4 ${isSelected ? 'bg-blue-600 text-white' : 'bg-gray-100 text-blue-600'}">
+                    ${opt.id}
+                </div>
+                <span>${opt.text}</span>
+            `;
+            div.onclick = () => { 
+                userAnswers[currentQuestionIndex] = opt.id; 
+                renderQuestion(); 
+            };
+            container.appendChild(div);
+        });
+
+        document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
+        document.getElementById('prev-btn').style.opacity = currentQuestionIndex === 0 ? '0.5' : '1';
+        document.getElementById('next-btn').innerText = currentQuestionIndex === questions.length - 1 ? "Selesai" : "Selanjutnya";
+    }
+
+    function handleNext() {
+        if (currentQuestionIndex < questions.length - 1) {
+            currentQuestionIndex++;
+            renderQuestion();
+        } else {
+            document.getElementById('confirm-modal').style.display = 'flex';
+        }
+    }
+
+    function prevQuestion() {
+        if (currentQuestionIndex > 0) {
+            currentQuestionIndex--;
+            renderQuestion();
+        }
+    }
+
+    function hideConfirm() { 
+        document.getElementById('confirm-modal').style.display = 'none'; 
+    }
+
+    async function finishExam() {
+        hideConfirm();
+        clearInterval(timerInterval);
+        document.getElementById('loading-overlay').style.display = 'flex';
+
+        let scoreCount = 0;
+        questions.forEach((q, i) => { 
+            if (userAnswers[i] === q.correct) scoreCount++; 
+        });
+        const finalScore = Math.round((scoreCount / questions.length) * 100);
+
+        const payload = new URLSearchParams();
+        payload.append('timestamp', new Date().toLocaleString('id-ID'));
+        payload.append('nama', userData.name);
+        payload.append('absen', userData.absen);
+        payload.append('skor', finalScore);
+        payload.append('durasi', document.getElementById('timer').innerText);
+        payload.append('jawaban', JSON.stringify(userAnswers));
+
+        try {
+            await fetch(scriptURL, { 
+                method: 'POST', 
+                mode: 'no-cors', 
+                body: payload 
+            });
+            showResult(finalScore, scoreCount);
+        } catch (e) {
+            console.error("Gagal mengirim data:", e);
+            showResult(finalScore, scoreCount);
+        } finally {
+            document.getElementById('loading-overlay').style.display = 'none';
+        }
+    }
+
+    function showResult(score, correctCount) {
+        document.getElementById('exam-screen').innerHTML = `
+            <div class="flex flex-col items-center justify-center text-center h-full py-10">
+                <h1 class="text-3xl font-black mb-2 uppercase">Hasil Ujian</h1>
+                <p class="text-gray-600 mb-8">${userData.name} (Absen: ${userData.absen})</p>
+                <div class="text-8xl font-black text-blue-600 mb-8">${score}</div>
+                <div class="bg-white rounded-2xl p-6 w-full shadow-sm border space-y-2 mb-8">
+                    <div class="flex justify-between"><span>Benar:</span><span class="font-bold text-green-600">${correctCount}</span></div>
+                    <div class="flex justify-between"><span>Salah:</span><span class="font-bold text-red-500">${questions.length - correctCount}</span></div>
+                    <div class="flex justify-between"><span>Waktu:</span><span class="font-bold">${document.getElementById('timer').innerText}</span></div>
+                </div>
+                <button onclick="location.reload()" class="btn-nav w-full py-4 text-lg uppercase shadow-lg">Kembali ke Awal</button>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
